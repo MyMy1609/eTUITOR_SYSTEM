@@ -9,6 +9,7 @@ using eTUTOR.Models;
 using System.Web.Routing;
 using System.Web.SessionState;
 using eTUTOR.Tests.Support;
+using eTUTOR.Filter;
 
 namespace eTUTOR.Tests
 {
@@ -26,7 +27,8 @@ namespace eTUTOR.Tests
             Mock<HttpContextBase> moqContext = new Mock<HttpContextBase>();
             Mock<HttpRequestBase> moqRequest = new Mock<HttpRequestBase>();
             Mock<HttpSessionStateBase> moqSession = new Mock<HttpSessionStateBase>();
-            moqContext.Setup(ctx => ctx.Session).Returns(moqSession.Object);
+
+            moqContext.Setup(ctx => ctx.Session).Returns(moqSession.Object);           
             moqContext.Setup(r => r.Request).Returns(moqRequest.Object);
 
             var controller = new UserController();
@@ -35,17 +37,14 @@ namespace eTUTOR.Tests
                 email = "tieumynvx@gmail.com",
                 password = "12345678",
             };
-
+            
             controller.ControllerContext = new ControllerContext(moqContext.Object, new RouteData(), controller);
             var validationResults = TestModelHelper.ValidateModel(controller, tutorAccount);
 
             //Action
-            var redirectRoute = controller.Login(tutorAccount.email, tutorAccount.password, null) as RedirectToRouteResult;
-
+            var redirectRoute = controller.Login(tutorAccount.email, tutorAccount.password, null) as JsonResult;  
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("InfoOfTutor", redirectRoute.RouteValues["action"]);
-            Assert.AreEqual("Tutor", redirectRoute.RouteValues["controller"]);
+            Assert.IsNotNull(redirectRoute.Data);
         }
         //Test case : tutor login with invalid email
         [TestMethod]
@@ -64,17 +63,18 @@ namespace eTUTOR.Tests
                 email = "invalidusername@gmail.com",
                 password = "12345678",
             };
-
+              var temp = ( new { error = "No Access", message = "username hoặc email không tồn tại" , status =0});
+            
             controller.ControllerContext = new ControllerContext(moqContext.Object, new RouteData(), controller);
             var validationResults = TestModelHelper.ValidateModel(controller, tutorAccount);
 
             //Action
-            var redirectRoute = controller.Login(tutorAccount.email, tutorAccount.password, null) as ViewResult;
-
+            var redirectRoute = controller.Login(tutorAccount.email, tutorAccount.password, null) as JsonResult;
+            var data = redirectRoute.Data;
             //Assert
             Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("username hoặc email không tồn tại", redirectRoute.ViewBag.msg);
-            Assert.AreEqual("Login", redirectRoute.ViewName);
+            Assert.AreEqual(temp.ToString(), data.ToString());
+            
         }
         //Test case : tutor login with Valid email and Invalid password
         [TestMethod]
@@ -98,11 +98,11 @@ namespace eTUTOR.Tests
             var validationResults = TestModelHelper.ValidateModel(controller, tutorAccount);
 
             //Action
-            var redirectRoute = controller.Login(tutorAccount.email, tutorAccount.password, null) as ViewResult;
-
+            var redirectRoute = controller.Login(tutorAccount.email, tutorAccount.password, null) as JsonResult;
+            var temp = (new { error = "No Access", message = "Mật khẩu sai rồi !", status = 0 });
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("Mật khẩu sai rồi !", redirectRoute.ViewBag.msg);
+            Assert.IsNotNull(redirectRoute.Data);
+            Assert.AreEqual(temp.ToString(), redirectRoute.Data.ToString());
         }
         //Test case : tutor login with account Status is 2 (Account not activated yet)
         [TestMethod]
@@ -124,13 +124,14 @@ namespace eTUTOR.Tests
 
             controller.ControllerContext = new ControllerContext(moqContext.Object, new RouteData(), controller);
             var validationResults = TestModelHelper.ValidateModel(controller, tutorAccount);
+            var temp = (new { error = "No Access", message = "Tài khoản của bạn chưa được kích hoạt", status = 0 });
 
             //Action
-            var redirectRoute = controller.Login(tutorAccount.email, tutorAccount.password, null) as ViewResult;
+            var redirectRoute = controller.Login(tutorAccount.email, tutorAccount.password, null) as JsonResult;
 
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("Tài khoản của bạn chưa được kích hoạt", redirectRoute.ViewBag.msg);
+            Assert.IsNotNull(redirectRoute.Data);
+            Assert.AreEqual(temp.ToString(), redirectRoute.Data.ToString());
         }
         //Test case : tutor login with account status is 3 (Account blocked)
         [TestMethod]
@@ -143,23 +144,25 @@ namespace eTUTOR.Tests
             moqContext.Setup(ctx => ctx.Session).Returns(moqSession.Object);
             moqContext.Setup(r => r.Request).Returns(moqRequest.Object);
 
+
+
             var controller = new UserController();
             var tutorAccount = new tutor
             {
                 email = "tieumynvx123@gmail.com",
                 password = "12345678",
             };
-
+            
             controller.ControllerContext = new ControllerContext(moqContext.Object, new RouteData(), controller);
             var validationResults = TestModelHelper.ValidateModel(controller, tutorAccount);
+            var temp = (new { error = "Block", message = "Tài khoản của bạn đã bị khóa , vui lòng liên hệ ban quản trị hệ thống", status = 3 });
 
             //Action
-            var redirectRoute = controller.Login(tutorAccount.email, tutorAccount.password, null) as ViewResult;
+            var redirectRoute = controller.Login(tutorAccount.email, tutorAccount.password, null) as JsonResult;
 
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("Tài khoản của bạn đã bị khóa , vui lòng liên hệ ban quản trị hệ thống", redirectRoute.ViewBag.msg1);
-            Assert.AreEqual("Login", redirectRoute.ViewName);
+            Assert.IsNotNull(redirectRoute.Data);
+            Assert.AreEqual(temp.ToString(), redirectRoute.Data.ToString());
         }
         /*
             UNIT TEST FOR STUDENT LOGIN FUNCTION
@@ -187,12 +190,10 @@ namespace eTUTOR.Tests
             var validationResults = TestModelHelper.ValidateModel(controller, studentAccount);
 
             //Action
-            var redirectRoute = controller.Login(studentAccount.username, studentAccount.password, null) as RedirectToRouteResult;
+            var redirectRoute = controller.Login(studentAccount.username, studentAccount.password, null) as JsonResult;
 
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("InfoOfStudent", redirectRoute.RouteValues["action"]);
-            Assert.AreEqual("Student", redirectRoute.RouteValues["controller"]);
+            Assert.IsNotNull(redirectRoute.Data);
         }
         //Test case : student login with invalid username
         [TestMethod]
@@ -216,12 +217,12 @@ namespace eTUTOR.Tests
             var validationResults = TestModelHelper.ValidateModel(controller, studentAccount);
 
             //Action
-            var redirectRoute = controller.Login(studentAccount.username, studentAccount.password, null) as ViewResult;
+            var temp = (new { error = "No Access", message = "username hoặc email không tồn tại", status = 0 });
+            var redirectRoute = controller.Login(studentAccount.username, studentAccount.password, null) as JsonResult;
 
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("username hoặc email không tồn tại", redirectRoute.ViewBag.msg);
-            Assert.AreEqual("Login", redirectRoute.ViewName);
+            Assert.IsNotNull(redirectRoute.Data);
+            Assert.AreEqual(temp.ToString(), redirectRoute.Data.ToString());
         }
         //Test case : student login with valid username and invalid password
         [TestMethod]
@@ -245,12 +246,13 @@ namespace eTUTOR.Tests
             var validationResults = TestModelHelper.ValidateModel(controller, studentAccount);
 
             //Action
-            var redirectRoute = controller.Login(studentAccount.username, studentAccount.password, null) as ViewResult;
+            var redirectRoute = controller.Login(studentAccount.username, studentAccount.password, null) as JsonResult;
+            var temp = (new { error = "No Access", message = "Mật khẩu sai rồi !", status = 0 });
 
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("Mật khẩu sai rồi !", redirectRoute.ViewBag.msg);
-            Assert.AreEqual("Login", redirectRoute.ViewName);
+            Assert.IsNotNull(redirectRoute.Data);
+            Assert.AreEqual(temp.ToString(), redirectRoute.Data.ToString());
+            
         }
         //Test case : student login with account status is 2 (Account not activated yet)
         [TestMethod]
@@ -272,14 +274,14 @@ namespace eTUTOR.Tests
 
             controller.ControllerContext = new ControllerContext(moqContext.Object, new RouteData(), controller);
             var validationResults = TestModelHelper.ValidateModel(controller, studentAccount);
+            var temp = (new { error = "No Access", message = "Tài khoản của bạn chưa được kích hoạt", status = 2 });
 
             //Action
-            var redirectRoute = controller.Login(studentAccount.username, studentAccount.password, null) as ViewResult;
+            var redirectRoute = controller.Login(studentAccount.username, studentAccount.password, null) as JsonResult;
 
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("Tài khoản của bạn chưa được kích hoạt", redirectRoute.ViewBag.msg);
-            Assert.AreEqual("Login", redirectRoute.ViewName);
+            Assert.IsNotNull(redirectRoute.Data);
+            Assert.AreEqual(temp.ToString(), redirectRoute.Data.ToString());
         }
         //Test case : student login with account status is 3 (Account blocked)
         [TestMethod]
@@ -301,14 +303,14 @@ namespace eTUTOR.Tests
 
             controller.ControllerContext = new ControllerContext(moqContext.Object, new RouteData(), controller);
             var validationResults = TestModelHelper.ValidateModel(controller, studentAccount);
+            var temp = (new { error = "Block", message = "Tài khoản của bạn đã bị khóa , vui lòng liên hệ ban quản trị hệ thống", status = 3 });
 
             //Action
-            var redirectRoute = controller.Login(studentAccount.username, studentAccount.password, null) as ViewResult;
+            var redirectRoute = controller.Login(studentAccount.username, studentAccount.password, null) as JsonResult;
 
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("Tài khoản của bạn đã bị khóa , vui lòng liên hệ ban quản trị hệ thống", redirectRoute.ViewBag.msg1);
-            Assert.AreEqual("Login", redirectRoute.ViewName);
+            Assert.IsNotNull(redirectRoute.Data);
+            Assert.AreEqual(temp.ToString(), redirectRoute.Data.ToString());
         }
         /*
            UNIT TEST FOR PARENT LOGIN FUNCTION
@@ -336,12 +338,10 @@ namespace eTUTOR.Tests
             var validationResults = TestModelHelper.ValidateModel(controller, parentAccount);
 
             //Action
-            var redirectRoute = controller.Login(parentAccount.email, parentAccount.password, null) as RedirectToRouteResult;
+            var redirectRoute = controller.Login(parentAccount.email, parentAccount.password, null) as JsonResult;
 
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("InfoOfParent", redirectRoute.RouteValues["action"]);
-            Assert.AreEqual("Parent", redirectRoute.RouteValues["controller"]);
+            Assert.IsNotNull(redirectRoute.Data);            
         }
         //Test case : parent login with invalid email
         [TestMethod]
@@ -365,12 +365,12 @@ namespace eTUTOR.Tests
             var validationResults = TestModelHelper.ValidateModel(controller, parentAccount);
 
             //Action
-            var redirectRoute = controller.Login(parentAccount.email, parentAccount.password, null) as ViewResult;
-
+            var redirectRoute = controller.Login(parentAccount.email, parentAccount.password, null) as JsonResult;
+            var temp = (new { error = "No Access", message = "username hoặc email không tồn tại", status = 0 });
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("username hoặc email không tồn tại", redirectRoute.ViewBag.msg);
-            Assert.AreEqual("Login", redirectRoute.ViewName);
+            Assert.IsNotNull(redirectRoute.Data);
+            Assert.AreEqual(temp.ToString(), redirectRoute.Data.ToString());
+            
         }
         //Test case : parent login with valid email and invalid password
         [TestMethod]
@@ -392,14 +392,14 @@ namespace eTUTOR.Tests
 
             controller.ControllerContext = new ControllerContext(moqContext.Object, new RouteData(), controller);
             var validationResults = TestModelHelper.ValidateModel(controller, parentAccount);
+            var temp = (new { error = "No Access", message = "Mật khẩu sai rồi !", status = 0 });
 
             //Action
-            var redirectRoute = controller.Login(parentAccount.email, parentAccount.password, null) as ViewResult;
+            var redirectRoute = controller.Login(parentAccount.email, parentAccount.password, null) as JsonResult;
 
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("Mật khẩu sai rồi !", redirectRoute.ViewBag.msg);
-            Assert.AreEqual("Login", redirectRoute.ViewName);
+            Assert.IsNotNull(redirectRoute.Data);
+            Assert.AreEqual(temp.ToString(), redirectRoute.Data.ToString());
         }
         //Test case : parent login with account status is 2 (Account not activated yet)
         [TestMethod]
@@ -421,14 +421,14 @@ namespace eTUTOR.Tests
 
             controller.ControllerContext = new ControllerContext(moqContext.Object, new RouteData(), controller);
             var validationResults = TestModelHelper.ValidateModel(controller, parentAccount);
+            var temp = (new { error = "No Access", message = "Tài khoản của bạn chưa được kích hoạt", status = 2 });
 
             //Action
-            var redirectRoute = controller.Login(parentAccount.email, parentAccount.password, null) as ViewResult;
+            var redirectRoute = controller.Login(parentAccount.email, parentAccount.password, null) as JsonResult;
 
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("Tài khoản của bạn chưa được kích hoạt", redirectRoute.ViewBag.msg);
-            Assert.AreEqual("Login", redirectRoute.ViewName);
+            Assert.IsNotNull(redirectRoute.Data);
+            Assert.AreEqual(temp.ToString(), redirectRoute.Data.ToString());
         }
         //Test case : parent login with account status is 3 (Account blocked)
         [TestMethod]
@@ -450,14 +450,14 @@ namespace eTUTOR.Tests
 
             controller.ControllerContext = new ControllerContext(moqContext.Object, new RouteData(), controller);
             var validationResults = TestModelHelper.ValidateModel(controller, parentAccount);
+            var temp = (new { error = "Block", message = "Tài khoản của bạn đã bị khóa , vui lòng liên hệ ban quản trị hệ thống", status = 3 });
 
             //Action
-            var redirectRoute = controller.Login(parentAccount.email, parentAccount.password, null) as ViewResult;
+            var redirectRoute = controller.Login(parentAccount.email, parentAccount.password, null) as JsonResult;
 
             //Assert
-            Assert.IsNotNull(redirectRoute);
-            Assert.AreEqual("Tài khoản của bạn đã bị khóa , vui lòng liên hệ ban quản trị hệ thống", redirectRoute.ViewBag.msg1);
-            Assert.AreEqual("Login", redirectRoute.ViewName);
+            Assert.IsNotNull(redirectRoute.Data);
+            Assert.AreEqual(temp.ToString(), redirectRoute.Data.ToString());
         }
     }
 }
