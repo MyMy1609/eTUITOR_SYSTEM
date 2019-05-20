@@ -61,11 +61,12 @@ namespace eTUTOR.Controllers
                 else if (avatarSon.ContentLength > 0)
                 {
                     int MaxContentLength = 1024 * 1024 * 3; //3 MB
-                    string[] AllowedFileExtensions = new string[] { ".jpg", ".png", ".pdf" };
+                    string[] AllowedFileExtensions = new string[] { ".jpg", ".png" };
 
                     if (!AllowedFileExtensions.Contains(avatarSon.FileName.Substring(avatarSon.FileName.LastIndexOf('.'))))
                     {
-                        ModelState.AddModelError("File", "Please file of type: " + string.Join(", ", AllowedFileExtensions));
+                        setAlert("Vui lòng chọn file có đuôi : .JPG .PNG", "error");
+                        return RedirectToAction("InfoOfParent");
                     }
 
                     else if (avatarSon.ContentLength > MaxContentLength)
@@ -100,50 +101,53 @@ namespace eTUTOR.Controllers
             if (files == null)
             {
                 setAlert("Vui lòng chọn file !", "error");
-                return RedirectToAction("InfoOfParent", "Parent");
+                return RedirectToAction("InfoOfParent");
             }
             else if (files.ContentLength > 0)
             {
-                int MaxContentLength = 1024 * 1024 * 3; //3 MB
+                int MaxContentLength = 1024 * 1024 * 4; //3 MB
                 string[] AllowedFileExtensions = new string[] { ".jpg", ".png" };
                 if (!AllowedFileExtensions.Contains(files.FileName.Substring(files.FileName.LastIndexOf('.'))))
                 {
                     setAlert("Vui lòng chọn file có đuôi : .JPG .PNG", "error");
-                    return RedirectToAction("InfoOfParent", "Parent");
+                    return RedirectToAction("InfoOfParent");
                 }
                 else if (files.ContentLength > MaxContentLength)
                 {
-                    setAlert("File bạn tải lên quá lớn, tối đa :" + MaxContentLength + "MB", "error");
-                    return RedirectToAction("InfoOfParent", "Parent");
+                    setAlert("File bạn tải lên quá lớn, tối đa :" + 4 + "MB", "error");
+                    return RedirectToAction("InfoOfParent");
                 }
                 else
                 {
-                    //TO:DO
+                    //todo
                     var fileName = Path.GetFileName(files.FileName);
                     var path = Path.Combine(Server.MapPath("~/Content/img/avatar/parent"), fileName);
                     files.SaveAs(path);
                     string s = Session["UserID"].ToString();
                     int idUser = int.Parse(s);
                     //get parent
-                    var parentt = db.parents.SingleOrDefault(x => x.parent_id == idUser);
+                    var parent = db.parents.SingleOrDefault(x => x.parent_id == idUser);
                     //xóa file ảnh cũ
-                    var photoName = parentt.avatar;
-                    var fullPath = Path.Combine(Server.MapPath("~/Content/img/avatar/parent"), photoName);
-                    if (System.IO.File.Exists(fullPath))
-
+                    var photoName = parent.avatar;
+                    if (photoName != null)
                     {
-                        System.IO.File.Delete(fullPath);
+                        var fullPath = Path.Combine(Server.MapPath("~/Content/img/avatar/parent"), photoName);
+
+                        if (System.IO.File.Exists(fullPath))
+                        {
+                            System.IO.File.Delete(fullPath);
+                        }
                     }
-                    parentt.avatar = fileName;
+                    parent.avatar = fileName;
                     db.SaveChanges();
                     setAlert("Tải ảnh đại diện thành công", "success");
                     ModelState.Clear();
-                    return RedirectToAction("InfoOfParent", "Parent");
+                    return RedirectToAction("InfoOfParent");
                 }
             }
 
             setAlert("Vui lòng chọn file", "error");
-            return RedirectToAction("InfoOfParent", "Parent");
+            return RedirectToAction("InfoOfParent");
         }
         //Edit info of Son
         public ActionResult EditSon(string idStudent, string fullname, string username, string email, string bod, HttpPostedFileBase files)

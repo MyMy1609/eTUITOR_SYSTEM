@@ -77,12 +77,14 @@
                         new { enctype = "multipart/form-data" }))
                         {
 
-                            <div class="modal-body">
-
-                                <input type="file" name="files" id="files" class="form-control" /><br><br>
-                            </div>
+                        <div class="modal-body">
+                            <span style="color:red" id="feedback"></span>
+                            <input type="file" name="files" id="files" class="form-control"
+                                   accept=".jpg,.png" onchange="validate_fileupload(this);" /><br><br>
+                        </div>
                             <div class="modal-footer">
-                                <input type="submit" value="Tải ảnh" class="btn-outline-success" style="border:5%" />
+                                <input type="submit" value="Tải ảnh" class="btn-outline-success" 
+                                       style="border:5%" onclick="return valid_form();" />
                             </div>
                         }
                     </div>
@@ -843,6 +845,29 @@
                 end_time: "Bạn phải nhập giờ kết thúc"
             }
         })
+        //Check file on page
+        var valid = false;
+
+        function validate_fileupload(input_element) {
+            var el = document.getElementById("feedback");
+            var fileName = input_element.value;
+            var allowed_extensions = new Array("jpg", "png");
+            var file_extension = fileName.split('.').pop();
+            var FileSize = input_element.files[0].size / 1024 / 1024;
+            for (var i = 0; i < allowed_extensions.length; i++) {
+                if (allowed_extensions[i] == file_extension && FileSize < 4) {
+                    valid = true; // valid file extension
+                    el.innerHTML = "";
+                    return;
+                }
+            }
+            el.innerHTML = "File không hợp lệ, vui lòng tải file có dung lượng dưới 4MB và được lưu dưới dạng file JPG, PNG";
+            valid = false;
+        }
+
+        function valid_form() {
+            return valid;
+        }
     </script>
 }
 <!--   var request = new XMLHttpRequest();
