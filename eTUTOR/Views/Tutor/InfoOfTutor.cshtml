@@ -9,7 +9,8 @@
     var comment = db.comments.ToList().Where(x => x.tutor_id == Model.tutor_id); /*use for line 594 - danh sách comment của gia sư*/
     DateTime birthday = Model.birthday.GetValueOrDefault();
     string birthdayformat = birthday.ToString("dd/MM/yyyy");
-
+    var sub = db.subjects.ToList().Where(x => x.tutor_id == Model.tutor_id).Count();
+    var sche = db.schedules.ToList().Where(x => x.tutor_id == Model.tutor_id).Count();
 
 }
 
@@ -656,7 +657,103 @@
                             </div>
                         </div>
                     </div>
+                    <div class="card">
+                            <div class="card-header mt-2" role="tab" id="accord6" style="border-radius: 10px; background-color: indianred; font-size: 20px; padding-left: 10px; padding-bottom: 15px">
+                                <h5 class="mb-0">
+                                    <a class="collapsed" data-toggle="collapse" href="#collapse-pane-7" role="button" aria-expanded="false"
+                                       aria-controls="collapse-pane-6" style="font-size:20px">
+                                        Quản lý môn học
+                                        @if (sub <= 0) {<span id="canhbao" style="color:red">*</span> }
+                                    </a>
+                                </h5>
+                            </div>
+                            <div id="collapse-pane-7" class="collapse" role="tabpanel" aria-labelledby="accord7"
+                                 data-parent="#demo-accordion-collapse">
+                                <div class="card-body">
+                                    <button type="button" class="btn btn-success fa-pull-left" data-toggle="modal" data-target="#a-createSub" style="">
+                                        Tạo môn học mới
+                                    </button>
+                                    <div class="modal" id="a-createSub">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form action="/Tutor/addSubject" method="post" class="">
 
+                                                    <div class="modal-header">
+                                                        <h4 class="modal-title" style="margin-left: 30%">TẠO MỚI MÔN HỌC</h4>
+                                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <input type="text" name="nameSubject" class="form-control fa-pull-left" placeholder="Ghi tên môn học" />
+                                                        <input type="text" name="idTutor" value="@Model.tutor_id" style="display:none" />
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <input type="submit" value="Thêm" class="btn btn-success pull-right" />
+
+                                                        <button type="button" class="btn btn-primary" data-dismiss="modal">Hủy</button>
+                                                    </div>
+                                                </form>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <table class="table" style="text-align: center;">
+                                        <tr>
+                                            <th>
+                                                id
+                                            </th>
+                                            <th>
+                                                Môn học
+                                            </th>
+                                            <th>
+
+                                            </th>
+                                        </tr>
+                                        @foreach (var ses in db.subjects.ToList().Where(x => x.tutor_id == int.Parse(Session["UserID"].ToString())).OrderBy(x => x.subject_name))
+                                        {
+                                            <tr>
+
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ses.subject_id)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ses.subject_name)
+                                                </td>
+                                                <td>
+                                                    <button type="button" class="btn btn-primary p-2" data-toggle="modal" data-target="#a-@ses.subject_id">
+                                                        <i class="fa fa-window-close text-danger"></i>
+                                                    </button>
+                                                    <div class="modal" id="a-@ses.subject_id">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header" style="margin-left:40%">
+                                                                    <h4 class="modal-title" style="color:darkred;background-color:yellow">CẢNH BÁO</h4>
+                                                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <dl class="dl-horizontal">
+                                                                        <dt>
+                                                                            Bạn chắc chắn muốn xóa môn học này ?
+                                                                        </dt>
+                                                                    </dl>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    @Html.ActionLink("Xóa", "deleteSubject", "Tutor", new { idSubject = ses.subject_id }, new { @class = "btn btn-danger" })
+
+                                                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Hủy</button>
+                                                                </div>
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+
+
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
 
                 </div>
 

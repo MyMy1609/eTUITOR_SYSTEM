@@ -49,7 +49,7 @@ namespace eTUTOR.Controllers
         [Filter.Authorize]
         public ActionResult InfoOfTutor()
         {
-            if(Session["UserID"] != null)
+            if (Session["UserID"] != null)
             {
                 var tutor_id = int.Parse(Session["UserID"].ToString());
                 var info = db.tutors.FirstOrDefault(x => x.tutor_id == tutor_id);
@@ -71,10 +71,11 @@ namespace eTUTOR.Controllers
             if (types == "student" || types == "tutor")
             {
 
-                return RedirectToAction("RegisterTutor", new { id = iddd , type = types });
+                return RedirectToAction("RegisterTutor", new { id = iddd, type = types });
             }
-            else { 
-            
+            else
+            {
+
                 return RedirectToAction("RegisterTutorParent", new { idd = iddd });
             }
         }
@@ -98,7 +99,7 @@ namespace eTUTOR.Controllers
             {
                 return View(tatu);
             }
-            
+
             return View(tatu);
         }
         [Filter.Authorize]
@@ -235,11 +236,11 @@ namespace eTUTOR.Controllers
             db.SaveChanges();
             return RedirectToAction("InfoOfTutor", "Tutor", new { id = Session["UserID"] });
         }
-      
+
         public ActionResult SearchTutor(string search)
         {
             string searchM = search.ToUpper();
-            var tutor = db.tutors.ToList().Where(x => x.status==1 &&( x.fullname.ToUpper().Contains(searchM) || x.specialized.ToUpper().Contains(searchM) ) );
+            var tutor = db.tutors.ToList().Where(x => x.status == 1 && (x.fullname.ToUpper().Contains(searchM) || x.specialized.ToUpper().Contains(searchM)));
             return View(tutor);
         }
 
@@ -329,42 +330,42 @@ namespace eTUTOR.Controllers
         [HttpPost]
         public ActionResult changeAvatar(HttpPostedFileBase files)
         {
-            
-           
-                if (files == null)
-                {
+
+
+            if (files == null)
+            {
 
                 setAlert("Vui lòng chọn file !", "error");
                 return RedirectToAction("InfoOfTutor");
             }
-                else if (files.ContentLength > 0)
-                {
-                    int MaxContentLength = 1024 * 1024 * 4; //3 MB
-                    string[] AllowedFileExtensions = new string[] { ".jpg", ".png", ".pdf" };
+            else if (files.ContentLength > 0)
+            {
+                int MaxContentLength = 1024 * 1024 * 4; //3 MB
+                string[] AllowedFileExtensions = new string[] { ".jpg", ".png", ".pdf" };
 
-                    if (!AllowedFileExtensions.Contains(files.FileName.Substring(files.FileName.LastIndexOf('.'))))
-                    {
+                if (!AllowedFileExtensions.Contains(files.FileName.Substring(files.FileName.LastIndexOf('.'))))
+                {
 
                     setAlert("Vui lòng chọn file có đuôi : .JPG .PNG", "error");
                     return RedirectToAction("InfoOfTutor");
                 }
 
-                    else if (files.ContentLength > MaxContentLength)
-                    {
+                else if (files.ContentLength > MaxContentLength)
+                {
                     setAlert("File bạn tải lên quá lớn, tối đa :" + 4 + "MB", "error");
                     return RedirectToAction("InfoOfTutor");
                 }
-                    else
-                    {
-                        //TO:DO
+                else
+                {
+                    //TO:DO
 
-                        var fileName = Path.GetFileName(files.FileName);
-                        var path = Path.Combine(Server.MapPath("~/Content/img/avatar/tutor"), fileName);
-                        files.SaveAs(path);
-                        string s = Session["UserID"].ToString();
-                        int idUser = int.Parse(s);
+                    var fileName = Path.GetFileName(files.FileName);
+                    var path = Path.Combine(Server.MapPath("~/Content/img/avatar/tutor"), fileName);
+                    files.SaveAs(path);
+                    string s = Session["UserID"].ToString();
+                    int idUser = int.Parse(s);
                     //get tutor
-                        var tutor = db.tutors.SingleOrDefault(x => x.tutor_id == idUser);
+                    var tutor = db.tutors.SingleOrDefault(x => x.tutor_id == idUser);
                     //xóa file ảnh cũ
                     var photoName = tutor.avatar;
                     var fullPath = Path.Combine(Server.MapPath("~/Content/img/avatar/tutor"), photoName);
@@ -374,17 +375,79 @@ namespace eTUTOR.Controllers
                         System.IO.File.Delete(fullPath);
                     }
                     tutor.avatar = fileName;
-                        db.SaveChanges();
+                    db.SaveChanges();
                     setAlert("Tải ảnh đại diện thành công", "success");
-                        ModelState.Clear();
-                        return RedirectToAction("InfoOfTutor");
-                    }
+                    ModelState.Clear();
+                    return RedirectToAction("InfoOfTutor");
                 }
-           
+            }
+
             setAlert("Vui lòng chọn file", "error");
             return RedirectToAction("InfoOfTutor");
         }
 
+        /**Môn học của tutor
+        * Thêm môn học
+        * Xóa môn học
+       **/
+        [HttpPost]
+        public ActionResult addSubject(string nameSubject, int idTutor)
+        {
+            string nameSub = nameSubject.Trim();
+            try
+            {
+                var subnew = new subject();
+                subnew.subject_name = nameSubject;
+                subnew.tutor_id = idTutor;
+                db.subjects.Add(subnew);
+                db.SaveChanges();
+                setAlert("Thêm môn học thành công", "success");
+                return RedirectToAction("InfoOfTutor");
+            }
+            catch
+            {
+                setAlert("Môn học mới thêm đã bị trùng !", "error");
+                return View("InfoOfTutor");
+            }
 
+
+        }
+        public ActionResult deleteSubject(int idSubject)
+        {
+
+            var subj = db.subjects.Single(x => x.subject_id == idSubject);
+            var checkCourse = db.sessions.FirstOrDefault(x => x.subject_id == idSubject);
+            if (subj != null)
+            {
+                if (checkCourse != null)
+                {
+                    try
+                    {
+                        db.subjects.Remove(subj);
+                        db.SaveChanges();
+                        return RedirectToAction("InfoOfTutor");
+                    }
+
+                    catch
+                    {
+                        setAlert("Môn học này đang mở dạy kèm không xóa được", "error");
+                        return View("InfoOfTutor");
+                    }
+                }
+                else
+                {
+
+                    setAlert("Môn học này đang mở dạy kèm không xóa được", "error");
+                    return View("InfoOfTutor");
+                }
+
+            }
+            else
+            {
+                setAlert("Không tìm thấy môn học", "error");
+                return View("InfoOfTutor");
+            }
+
+        }
     }
 }
