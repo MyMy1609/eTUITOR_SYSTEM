@@ -39,12 +39,6 @@
                 </div>
             }
 
-            @if (listSon.Count() < 1)
-            {
-                <div style="text-align:center">
-                    <span style="color:red;font-size:32px;text-transform:uppercase">*Vui lòng cập nhật thông tin của con bạn để đăng ký</span><br />
-                </div>
-            }
 
             <br /><br />
             <div style="text-align:">
@@ -72,28 +66,46 @@
 
                     </div>
                 }
-                <lable>Chọn môn học</lable>
-                <br />
-
-                <br />
-                <select class="form-control" name="idmonhoc" id="idmonhoc">
-                    @foreach (var item in sj)
-                    {
-                        <option value="@item.subject_id">@item.subject_name</option>
-                    }
-                </select>
-                <br />
-                <thead>
-
-                    <tr>
-                        <th></th>
-                        <th>Thứ</th>
-                        <th>Thời gian học</th>
-                        <th>Số buổi</th>
-                    </tr>
-                </thead>
-                @if (sch != null)
+                else
                 {
+                    <div class="alert alert-warning">
+                        <strong>Warning!</strong> Vui lòng cập nhật thông tin của con cái để tiếp tục đăng kí
+                    </div>
+                }
+                <br />
+                @if (sj.Count() > 0)
+                {
+                    <lable>Chọn môn học</lable>
+                    <br />
+
+                    <br />
+
+                    <select class="form-control" name="idmonhoc" id="idmonhoc">
+                        @foreach (var item in sj)
+                        {
+                            <option value="@item.subject_id">@item.subject_name</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <div class="alert alert-warning" id="countSchedule">
+                        <strong>Warning!</strong> Gia sư @Model.fullname chưa cập nhật môn dạy kèm.
+                    </div>
+                }
+                <br />
+                @if (sch.Count() > 0)
+                {
+                    <thead>
+
+                        <tr>
+                            <th></th>
+                            <th>Thứ</th>
+                            <th>Thời gian học</th>
+                            <th>Số buổi</th>
+                        </tr>
+                    </thead>
+
                     foreach (var item in sch)
                     {
                         <tr id="listschedulee">
@@ -105,6 +117,12 @@
                             </th>
                         </tr>
                     }
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        <strong>Warning!</strong> Gia sư @Model.fullname chưa cập nhật lịch dạy.
+                    </div>
                 }
             </table>
             @if (Session["UserID"] != null && listSon.Count() > 0)
@@ -197,6 +215,18 @@
     <script src="~/Content/vendor/bootstrap/js/jquery.steps.js"></script>
     <script src="~/Content/vendor/bootstrap/js/main.js"></script>
     <script type="text/javascript">
+        var sjj = @sj.Count();
+        var sche = @sch.Count();
+        if (sjj <= 0 || sche <= 0) {
+            $('#submit-form').attr('disabled', 'disabled');
+            $('#verify').attr('hidden','hidden');
+
+        } else {
+            $('#submit-form').removeAttr('disabled');
+            $('#verify').removeAttr('hidden');
+        }
+
+
         // When the modal opens
         $('#verify').click(function () {
 
@@ -246,18 +276,7 @@
             };
 
 
-        });                 //var lichhoc = document.getElementsByClassName('idschedule');
-                                        //for (var i = 0; lichhoc[i]; ++i) {
-                                        //    if (inputElements[i].checked) {
-                                        //        checkedValue = inputElements[i].value;
-                                        //        break;
-                                        //    }
-                                        //}
-
-                                        //var checkedValue = $('.messageCheckbox:checked').val();
-
-
-
+        });           
     </script>
 }
 
