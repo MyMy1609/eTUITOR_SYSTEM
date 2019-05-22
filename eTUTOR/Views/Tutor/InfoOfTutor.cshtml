@@ -365,7 +365,7 @@
                     </div>
                     @*Duyệt học sinh đăng ký học*@
                     <div class="card" >
-                        <div class="card-header" role="tab" id="accord3" style="border-radius: 10px; background-color:indianred; font-size: 8px; padding-left: 10px; padding-bottom: 15px; padding-top: 13px; margin-top:10px">
+                        <div class="card-header" role="tab" id="accord3" style="border-radius: 10px;transition: 0.02s ; background-color:indianred; font-size: 8px; padding-left: 10px; padding-bottom: 15px; padding-top: 13px; margin-top:10px">
                             <h5 class="mb-0">
                                 <a class="collapsed" data-toggle="collapse" href="#collapse-pane-3" role="button" aria-expanded="false" aria-controls="collapse-pane-3" style="font-size:20px">
                                     Duyệt học sinh đăng ký học
@@ -420,7 +420,7 @@
                                             </td>
                                             <td>
                                                 <label class="switch">
-                                                    <input type="checkbox" name="check" id="slider-duyet" onchange="duyetstudent(@session.session_id)">
+                                                    <input type="checkbox" name="check" id="slider-duyet" onchange="duyetkhoahocTutor(@session.session_id)">
                                                     <span class="slider round"></span>
                                                 </label>
                                             </td>
@@ -806,7 +806,7 @@
     <script src="~/Content/vendor/jquery/jquery.validate.min.js"></script>
     <script src="~/Content/vendor/lightbox2/dist/js/lightbox.min.js"></script>
     <script src="~/Content/build/js/TutorHomePage.component.js"></script>
-    <script src="~/Content/build/admin/js/TutorHomePage.component.js"></script>
+    <script src="~/Content/build/admin/js/TutorHomePage.component.js"></script> <!--Duyet lich bieu-->
     <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.15.0/jquery.validate.min.js"></script>
     <script>
         $(function () {

@@ -1,4 +1,4 @@
-//tat nhan day kem
+﻿//tat nhan day kem
 function duyetkhoahocre(id) {
     var request = new XMLHttpRequest();
     var url = "~/Tutor/registScheduleManager/" + id;
@@ -8,6 +8,14 @@ function duyetkhoahocre(id) {
     alert('id= ' + id);
 }
 
+// duyet khóa học của tutor
+function duyetkhoahocTutor(id) {
+    var request = new XMLHttpRequest();
+    var url = "/Tutor/Duyetkhoahoc/" + id;
+    var method = "POST";
+    request.open(method, url);
+    request.send();
+}
 
 // duyet view course
 function duyetkhoahoc(id) {

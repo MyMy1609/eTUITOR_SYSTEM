@@ -53,7 +53,7 @@ namespace eTUTOR.Controllers
             {
                 var tutor_id = int.Parse(Session["UserID"].ToString());
                 var info = db.tutors.FirstOrDefault(x => x.tutor_id == tutor_id);
-                List<session> sessionList = db.sessions.Where(x => x.tutor_id == tutor_id && x.status_admin == 2).ToList();
+                List<session> sessionList = db.sessions.Where(x => x.tutor_id == tutor_id && x.status_tutor == 2 && x.status_admin == 2).ToList();
                 ViewData["sessionlist"] = sessionList;
                 List<schedule> scheduleList = db.schedules.Where(x => x.tutor_id == tutor_id).ToList();
                 ViewData["scheduleList"] = scheduleList;
